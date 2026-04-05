@@ -3,7 +3,6 @@
 本模组是车万女仆（Touhou Little Maid）的附属扩展，核心内容包括：
 结婚求婚、同床事件、怀孕分娩、子代女仆成长，以及子代学习/探险工作系统。
 
-![模组预览](./五彩花束.png)
 
 - GitHub: https://github.com/YunChenqwq/TouhouLittleMaid-marriage
 - Minecraft: 1.21.1
