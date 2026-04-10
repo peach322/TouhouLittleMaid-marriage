@@ -1,16 +1,18 @@
 package com.example.maidmarriage.client;
 
 import com.example.maidmarriage.MaidMarriageMod;
-import com.example.maidmarriage.config.ModConfigs;
 import com.example.maidmarriage.network.payload.SubmitRomanceRhythmPayload;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -18,13 +20,16 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.lwjgl.glfw.GLFW;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
-@EventBusSubscriber(modid = MaidMarriageMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MaidMarriageMod.MOD_ID, value = Dist.CLIENT)
 public final class RomanceRhythmHud {
     private static final int FAIL_STREAK_LIMIT = 8;
     private static final int PEAK_LIMIT = 3;
-    private static final float NOTE_SPEED = 260f;
+    private static final float NOTE_SPEED = 120f;
     private static final long STEP_MS = 520L;
     private static final float TYPEWRITER_CPS = 20f;
 
@@ -33,6 +38,8 @@ public final class RomanceRhythmHud {
     private static final ResourceLocation PORTRAIT_HOT_SMILE =
             ResourceLocation.fromNamespaceAndPath(MaidMarriageMod.MOD_ID, "textures/gui/hotsmile.png");
 
+    private static final ResourceLocation MUSIC=
+            ResourceLocation.fromNamespaceAndPath(MaidMarriageMod.MOD_ID,"textures/gui/music/eighth_yellow.png");
     private static boolean active = false;
     private static UUID maidId = null;
     private static boolean sent = false;
@@ -110,24 +117,13 @@ public final class RomanceRhythmHud {
             spawnStep();
         }
 
-        float dx = NOTE_SPEED * (dt / 1000f);
-        float missX = 360f + 24f;
-        Iterator<Note> it = notes.iterator();
-        while (it.hasNext()) {
-            Note n = it.next();
-            n.x += dx;
-            if (n.x > missX) {
-                it.remove();
-                onMiss();
-                if (!active) {
-                    return;
-                }
-            }
-        }
+        notes.forEach((note)->{note.moveToNextFrame(dt);});
+        notes.removeIf((note)->{return note.lifeSpawn<0;});
 
         player = clamp(player - 0.9f * (dt / 1000f), 0f, 100f);
         maid = clamp(maid - 0.6f * (dt / 1000f), 0f, 100f);
         checkPeakOrEnd();
+
     }
 
     @SubscribeEvent
@@ -173,7 +169,9 @@ public final class RomanceRhythmHud {
             int nx = (int) (tx + n.x);
             int ny = ty + th / 2 - 6;
             int col = n.eighth ? 0xFFFF9A4A : 0xFFE9DEFF;
-            g.fill(nx, ny, nx + 12, ny + 12, col);
+
+            //使用自己写的渲染代码，以便于旋转、缩放
+            n.blit(g,MUSIC,nx,ny-6,0,0,16,32,16,32);
         }
 
         String mini = "x" + combo + "  " + judge;
@@ -215,7 +213,7 @@ public final class RomanceRhythmHud {
         float distMin = Float.MAX_VALUE;
         for (Note n : notes) {
             float d = Math.abs(n.x - judgeX);
-            if (d < distMin) {
+            if ((d < distMin)&&n.status.equals(NodeStatus.MOVING)) {
                 distMin = d;
                 nearest = n;
             }
@@ -225,14 +223,17 @@ public final class RomanceRhythmHud {
             return;
         }
         if (distMin <= 28f) {
-            notes.remove(nearest);
+            //notes.remove(nearest);
+            nearest.status=NodeStatus.PERFECT;
             onPerfect();
             hits++;
         } else if (distMin <= 68f) {
-            notes.remove(nearest);
+            //notes.remove(nearest);
+            nearest.status=NodeStatus.GOOD;
             onGood();
             hits++;
         } else {
+            nearest.status=NodeStatus.MISSED;
             onMiss();
         }
         checkPeakOrEnd();
@@ -355,34 +356,132 @@ public final class RomanceRhythmHud {
 
     private static boolean consumeHitInput(Minecraft mc) {
         if (RhythmKeyMappings.RHYTHM_HIT.consumeClick()) {
-            return true;
+            if(lastConfigKeyDown){
+                return false;
+            }
+            else{
+                lastConfigKeyDown=true;
+                return true;
+            }
+        }else{
+            lastConfigKeyDown=false;
+            return false;
         }
-
-        int key = switch (ModConfigs.rhythmHitKey()) {
-            case J -> GLFW.GLFW_KEY_J;
-            case K -> GLFW.GLFW_KEY_K;
-            case L -> GLFW.GLFW_KEY_L;
-            case SEMICOLON -> GLFW.GLFW_KEY_SEMICOLON;
-            case SPACE -> GLFW.GLFW_KEY_SPACE;
-        };
-
-        boolean down = GLFW.glfwGetKey(mc.getWindow().getWindow(), key) == GLFW.GLFW_PRESS;
-        boolean pressed = down && !lastConfigKeyDown;
-        lastConfigKeyDown = down;
-        return pressed;
     }
 
     private static float clamp(float v, float min, float max) {
         return Math.max(min, Math.min(max, v));
     }
 
+    private enum NodeStatus{
+        MOVING,PERFECT,MISSED,GOOD;
+    }
     private static final class Note {
         private float x;
+        private float perturbationY;
         private final boolean eighth;
+        private NodeStatus status;
+        private float rotationRoll;
+        private float rotationYaw;
+        private float scale;
 
+        private long lifeSpawn;
+        private static int width=16;
+        private static int height=32;
+        private static float rollVelocity=(float)Math.PI/2000.0f;
+        private static float yawVelocity=(float)Math.PI/900.0f;
+        private static float scaleVelocity=(float)0.95f/1000.0f;
+        private static float yVelocity=((float)height)/1000.0f;
         private Note(float x, boolean eighth) {
             this.x = x;
             this.eighth = eighth;
+            perturbationY =ThreadLocalRandom.current().nextFloat(6)-3.0f;
+            status=NodeStatus.MOVING;
+            rotationRoll=0.0f;
+            rotationYaw=0.0f;
+            scale=1.0f;
+            lifeSpawn=1000;
+        }
+        public void moveToNextFrame(long dtMillis){
+            switch(this.status){
+                case MOVING:
+                    float dx = NOTE_SPEED * (dtMillis / 1000f);
+                    float missX = 360f - 24f;
+                    x+=dx;
+                    if(x>missX){
+                        this.status=NodeStatus.MISSED;
+                    }
+                    break;
+
+                case MISSED:
+                    lifeSpawn=lifeSpawn-dtMillis;
+                    rotationRoll+=dtMillis*rollVelocity;
+                    break;
+
+                case GOOD:
+                case PERFECT:
+                    lifeSpawn=lifeSpawn-dtMillis;
+                    scale=scale-dtMillis*scaleVelocity;
+                    rotationYaw+=dtMillis*yawVelocity;
+                    perturbationY=perturbationY-dtMillis*yVelocity;
+                    break;
+            }
+        }
+
+        public void blit(GuiGraphics guiGraphics,ResourceLocation atlasLocation,int x,int y,float uOffset,float vOffset,int width,int height,int textureWidth,int textureHeight){
+            Class<?> guiGraphicsClass=guiGraphics.getClass();
+            Field[] fields =guiGraphicsClass.getDeclaredFields();
+            PoseStack poseStack=null;
+            Logger logger= LogManager.getLogger(MaidMarriageMod.MOD_ID);
+            for(Field field:fields){
+                if(field.getType().equals(PoseStack.class)){
+                    try{
+                        field.setAccessible(true);
+                        poseStack=(PoseStack) field.get(guiGraphics);
+                        break;
+                    }catch (IllegalAccessException illegalAccessException){
+                        logger.error("Crash IllegalAccessException when try to get PoseStack in GuiGraphics");
+                        return;
+                    }
+                }
+            }
+            Matrix4f poseMatrix=new Matrix4f(poseStack.last().pose());
+
+            Vector3f center=new Vector3f(x+((float)width)/2,y+((float)height)/2,0);
+            poseMatrix.translate(center).translate(new Vector3f(0,perturbationY,0));
+            switch (this.status){
+                case MOVING:
+                    break;
+                case MISSED:
+                    poseMatrix.translate(0,(float)height/2,0);
+                    poseMatrix.rotate(rotationRoll,new Vector3f(0,0,1));
+                    poseMatrix.translate(0,-(float)height/2,0);
+                    break;
+                case GOOD:
+                case PERFECT:
+                    poseMatrix.scale(this.scale);
+                    poseMatrix.rotate(rotationYaw,new Vector3f(0,1,0));
+                    break;
+            }
+            poseMatrix.translate(center.negate());
+            float x1=(float)x;
+            float y1=(float)y;
+            float x2=x1+width;
+            float y2=y1+height;
+            float minU=(uOffset+0.0f)/(float)textureWidth;
+            float maxU=(uOffset+(float)width)/(float) textureWidth;
+            float minV=(vOffset+0.0f)/(float)textureHeight;
+            float maxV=(vOffset+(float)height)/(float)textureHeight;
+            RenderSystem.setShaderTexture(0,atlasLocation);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.disableDepthTest();
+            BufferBuilder bufferBuilder= Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+
+            bufferBuilder.addVertex(poseMatrix,x1,y1,0).setUv(minU,minV);
+            bufferBuilder.addVertex(poseMatrix,x1,y2,0).setUv(minU,maxV);
+            bufferBuilder.addVertex(poseMatrix,x2,y2,0).setUv(maxU,maxV);
+            bufferBuilder.addVertex(poseMatrix,x2,y1,0).setUv(maxU,minV);
+            BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
         }
     }
 }

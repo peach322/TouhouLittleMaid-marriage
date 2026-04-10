@@ -56,6 +56,7 @@ neoForge {
 dependencies {
     // Touhou Little Maid 1.5.0 (NeoForge 1.21.1 runtime jar)
     implementation "curse.maven:touhou-little-maid-355044:7510722"
+    implementation "curse.maven:jei-238222:7361866"
 }
 
 tasks.withType(ProcessResources).configureEach {
