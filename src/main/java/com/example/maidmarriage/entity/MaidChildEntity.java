@@ -126,23 +126,21 @@ public class MaidChildEntity extends EntityMaid {
             return;
         }
         EntityMaid adult = new EntityMaid(serverLevel);
-        adult.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-        if (this.getOwner() instanceof Player owner) {
-            adult.tame(owner);
-        }
-        if (this.hasCustomName()) {
-            adult.setCustomName(this.getCustomName());
-        }
-        if (this.isYsmModel()) {
-            adult.setIsYsmModel(true);
-            adult.setYsmModel(this.getYsmModelId(), this.getYsmModelTexture(), this.getYsmModelName());
-        } else {
-            adult.setIsYsmModel(false);
-            adult.setModelId(this.getModelId());
-        }
-        applyBornMaidTraits(adult);
-        writeParentData(adult, this.motherUuid, this.fatherUuid);
+
+        // Copy all entity data so that inventory, marriage state, favorability,
+        // model, owner, custom name, position, parent UUIDs, flower gift masks,
+        // etc. are all preserved.  Remove UUID fields so the adult gets a
+        // fresh identity.
+        CompoundTag savedData = this.saveWithoutId(new CompoundTag());
+        savedData.remove("UUID");
+        savedData.remove("UUIDMost");
+        savedData.remove("UUIDLeast");
+        adult.load(savedData);
+
+        // load() also restores the child growth flags stored in persistent data,
+        // so markAsAdult() must be called afterwards to clear them.
         markAsAdult(adult);
+
         serverLevel.addFreshEntity(adult);
         serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, adult.getX(), adult.getY(1.0D), adult.getZ(),
                 10, 0.3D, 0.2D, 0.3D, 0.02D);
