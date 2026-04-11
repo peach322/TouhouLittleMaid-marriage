@@ -20,6 +20,12 @@ public class MaidChildEntity extends EntityMaid {
     private static final int DAY_TICKS = 24000;
 
     public static final String BORN_MAID_TAG = "maidmarriage_born_maid";
+    /**
+     * Entity tag (stored in base entity NBT "Tags" list) that marks a living child maid.
+     * Unlike PERSISTENT_CHILD_ACTIVE_KEY (ForgeData), this tag is always preserved by
+     * TLM's film serialization, making it the reliable source for child-maid detection.
+     */
+    public static final String CHILD_ACTIVE_ENTITY_TAG = "maidmarriage_child_entity";
     public static final String PERSISTENT_MOTHER_UUID_KEY = "maidmarriage_mother_uuid";
     public static final String PERSISTENT_FATHER_UUID_KEY = "maidmarriage_father_uuid";
     public static final String PERSISTENT_CHILD_ACTIVE_KEY = "maidmarriage_child_active";
@@ -75,6 +81,8 @@ public class MaidChildEntity extends EntityMaid {
         }
         ensureFullTameState();
         getPersistentData().putBoolean(PERSISTENT_CHILD_ACTIVE_KEY, true);
+        // Keep entity tag in sync; base-entity "Tags" NBT is always preserved by TLM films.
+        this.addTag(CHILD_ACTIVE_ENTITY_TAG);
         this.growthTicks++;
         updateGrowthStage();
         syncPersistentGrowthData();
@@ -200,6 +208,7 @@ public class MaidChildEntity extends EntityMaid {
         maid.addTag(BORN_MAID_TAG);
         maid.setFavorability(64);
         if (maid instanceof MaidChildEntity) {
+            maid.addTag(CHILD_ACTIVE_ENTITY_TAG);
             maid.getPersistentData().putBoolean(PERSISTENT_CHILD_ACTIVE_KEY, true);
             maid.getPersistentData().putBoolean(PERSISTENT_TAME_INITIALIZED_KEY, maid.isTame() && maid.getOwnerUUID() != null);
         }
@@ -226,12 +235,16 @@ public class MaidChildEntity extends EntityMaid {
     }
 
     public static boolean shouldStayChild(EntityMaid maid) {
-        return maid.getPersistentData().getBoolean(PERSISTENT_CHILD_ACTIVE_KEY);
+        // Check entity tag first: base-entity "Tags" NBT is always preserved by TLM films,
+        // whereas ForgeData (getPersistentData) may be lost during film serialization.
+        return maid.getTags().contains(CHILD_ACTIVE_ENTITY_TAG)
+                || maid.getPersistentData().getBoolean(PERSISTENT_CHILD_ACTIVE_KEY);
     }
 
     public static void markAsAdult(EntityMaid maid) {
         CompoundTag persistent = maid.getPersistentData();
         persistent.putBoolean(PERSISTENT_CHILD_ACTIVE_KEY, false);
+        maid.removeTag(CHILD_ACTIVE_ENTITY_TAG);
         persistent.remove(PERSISTENT_GROWTH_TICKS_KEY);
         persistent.remove(PERSISTENT_GROWTH_STAGE_KEY);
         persistent.remove(PERSISTENT_TAME_INITIALIZED_KEY);

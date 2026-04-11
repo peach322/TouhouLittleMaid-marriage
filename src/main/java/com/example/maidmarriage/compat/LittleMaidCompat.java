@@ -21,6 +21,7 @@ public class LittleMaidCompat implements ILittleMaid {
         NeoForge.EVENT_BUS.register(MarriageEventHandler.class);
         NeoForge.EVENT_BUS.register(RomanceSleepManager.class);
         NeoForge.EVENT_BUS.register(MaidWorkManager.class);
+        NeoForge.EVENT_BUS.register(ChildMaidFilmReviveHandler.class);
     }
 
     @Override
