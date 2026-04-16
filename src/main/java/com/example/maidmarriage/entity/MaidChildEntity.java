@@ -83,7 +83,7 @@ public class MaidChildEntity extends EntityMaid {
         getPersistentData().putBoolean(PERSISTENT_CHILD_ACTIVE_KEY, true);
         // Keep entity tag in sync; base-entity "Tags" NBT is always preserved by TLM films.
         this.addTag(CHILD_ACTIVE_ENTITY_TAG);
-        this.growthTicks++;
+        this.growthTicks = Math.min(this.growthTicks + 1, Integer.MAX_VALUE);
         updateGrowthStage();
         syncPersistentGrowthData();
         if (this.growthTicks >= getAdultAfterTicks()) {
@@ -198,8 +198,10 @@ public class MaidChildEntity extends EntityMaid {
 
     private static int getAdultAfterTicks() {
         long days = Math.max(1, ModConfigs.childGrowthDays());
-        long ticks = days * DAY_TICKS;
-        return (int) Math.min(Integer.MAX_VALUE, ticks);
+        if (days > Integer.MAX_VALUE / DAY_TICKS) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) (days * DAY_TICKS);
     }
 
     private static int getMiddleStageTicks() {

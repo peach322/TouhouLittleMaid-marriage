@@ -380,6 +380,9 @@ public final class RomanceSleepManager {
             serverLevel.sendParticles(ParticleTypes.HEART, spawnX, spawnY + 0.75, spawnZ, 16, 0.4, 0.25, 0.4, 0.02);
             serverLevel.playSound(null, mother.blockPosition(), net.minecraft.sounds.SoundEvents.CHICKEN_EGG,
                     net.minecraft.sounds.SoundSource.NEUTRAL, 0.7F, 1.1F);
+        } else {
+            LOGGER.warn("Failed to spawn child maid entity into world: mother={}, player={}",
+                    mother.getUUID(), player.getUUID());
         }
         return success;
     }
