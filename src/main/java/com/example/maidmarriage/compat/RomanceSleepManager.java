@@ -146,6 +146,14 @@ public final class RomanceSleepManager {
             player.sendSystemMessage(Component.translatable("message.maidmarriage.breed.pregnant_with_other"));
             return null;
         }
+        if (ModConfigs.romanceCooldownDays() > 0 && pregnancy.lastRomanceDay() >= 0) {
+            long currentDay = player.level().getGameTime() / 24000L;
+            long elapsedDays = currentDay - pregnancy.lastRomanceDay();
+            if (elapsedDays < ModConfigs.romanceCooldownDays()) {
+                player.sendSystemMessage(Component.translatable("message.maidmarriage.breed.not_time_yet"));
+                return null;
+            }
+        }
         return new RomancePrerequisite(playerBedPos.get(), pregnancy);
     }
 

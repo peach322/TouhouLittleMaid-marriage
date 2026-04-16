@@ -3,6 +3,7 @@ package com.example.maidmarriage.init;
 import com.example.maidmarriage.MaidMarriageMod;
 import com.example.maidmarriage.item.DescriptionItem;
 import com.example.maidmarriage.item.FlowerTestKitItem;
+import com.example.maidmarriage.item.MarriageApplicationItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -33,6 +34,18 @@ public final class ModItems {
     public static final DeferredItem<Item> FLOWER_TEST_KIT = ITEMS.register("flower_test_kit",
             () -> new FlowerTestKitItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE),
                     "tooltip.maidmarriage.flower_test_kit"));
+
+    public static final DeferredItem<Item> GOLDEN_DANDELION_HAIRPIN = ITEMS.register("golden_dandelion_hairpin",
+            () -> new DescriptionItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON),
+                    "tooltip.maidmarriage.golden_dandelion_hairpin"));
+
+    public static final DeferredItem<Item> MARRIAGE_APPLICATION = ITEMS.register("marriage_application",
+            () -> new MarriageApplicationItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON),
+                    "tooltip.maidmarriage.marriage_application"));
+
+    public static final DeferredItem<Item> GENEALOGY_DISPLAY_BOOK = ITEMS.register("genealogy_display_book",
+            () -> new DescriptionItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON),
+                    "tooltip.maidmarriage.genealogy_display_book"));
 
     private ModItems() {
     }

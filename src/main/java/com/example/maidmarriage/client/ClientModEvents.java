@@ -18,5 +18,6 @@ public final class ClientModEvents {
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(RhythmKeyMappings.RHYTHM_HIT);
+        event.register(RhythmKeyMappings.MAID_INTERACTION);
     }
 }

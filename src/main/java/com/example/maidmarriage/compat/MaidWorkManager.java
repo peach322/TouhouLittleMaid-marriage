@@ -1,6 +1,9 @@
 package com.example.maidmarriage.compat;
 
 import com.example.maidmarriage.MaidMarriageMod;
+import com.example.maidmarriage.config.ModConfigs;
+import com.example.maidmarriage.data.ModTaskData;
+import com.example.maidmarriage.data.PregnancyData;
 import com.example.maidmarriage.entity.ChildMaidHelper;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTickEvent;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
@@ -675,6 +678,9 @@ public final class MaidWorkManager {
         if (!canProgressCurrentAction(maid)) {
             return false;
         }
+        if (isInWeakOrPregnancyPeriod(level, maid)) {
+            return false;
+        }
         return maid.getScheduleDetail() == Activity.WORK;
     }
 
@@ -683,6 +689,25 @@ public final class MaidWorkManager {
             return false;
         }
         return !maid.isInSittingPose();
+    }
+
+    private static boolean isInWeakOrPregnancyPeriod(ServerLevel level, EntityMaid maid) {
+        if (ModTaskData.PREGNANCY_DATA == null) {
+            return false;
+        }
+        PregnancyData pregnancy = maid.getData(ModTaskData.PREGNANCY_DATA);
+        if (pregnancy == null) {
+            return false;
+        }
+        if (pregnancy.pregnant()) {
+            return true;
+        }
+        if (pregnancy.lastRomanceDay() < 0 || ModConfigs.romanceCooldownDays() <= 0) {
+            return false;
+        }
+        long currentDay = level.getGameTime() / 24000L;
+        long elapsedDays = currentDay - pregnancy.lastRomanceDay();
+        return elapsedDays < ModConfigs.romanceCooldownDays();
     }
 
     private static void freezeActionProgress(CompoundTag tag, long now) {

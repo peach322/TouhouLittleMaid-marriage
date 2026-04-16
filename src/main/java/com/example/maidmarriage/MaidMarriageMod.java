@@ -40,6 +40,9 @@ public final class MaidMarriageMod {
             event.accept(ModItems.RAINBOW_BOUQUET);
             event.accept(ModItems.LONGING_TESTER);
             event.accept(ModItems.FLOWER_TEST_KIT);
+            event.accept(ModItems.GOLDEN_DANDELION_HAIRPIN);
+            event.accept(ModItems.MARRIAGE_APPLICATION);
+            event.accept(ModItems.GENEALOGY_DISPLAY_BOOK);
         }
     }
 }

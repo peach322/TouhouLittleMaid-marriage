@@ -12,8 +12,13 @@ public final class RhythmKeyMappings {
             GLFW.GLFW_KEY_J,
             "key.categories.maidmarriage"
     );
+    public static final KeyMapping MAID_INTERACTION = new KeyMapping(
+            "key.maidmarriage.maid_interaction",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_O,
+            "key.categories.maidmarriage"
+    );
 
     private RhythmKeyMappings() {
     }
 }
-
