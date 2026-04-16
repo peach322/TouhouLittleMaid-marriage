@@ -192,5 +192,9 @@
   "config.maidmarriage.show_pregnancy_debug_countdown": "显示分娩倒计时（左上角）",
   "overlay.maidmarriage.debug.birth_countdown": "分娩倒计时[%s]: %s",
   "key.categories.maidmarriage": "女仆婚姻",
-  "key.maidmarriage.rhythm_hit": "节奏判定键"
+  "key.maidmarriage.rhythm_hit": "节奏判定键",
+  "message.maidmarriage.child.ride.mount": "你把%s扛在了肩上。",
+  "message.maidmarriage.child.ride.dismount": "%s从你肩上跳了下来。",
+  "message.maidmarriage.child.ride.grown_up_dismount": "%s长大了，已经自己从你身上下来了。",
+  "overlay.maidmarriage.child.ride.tip": "空手右键（非潜行）未成年小女仆，可以将她扛起跟随玩家。潜行（Shift）放下她。长大后会自动下来。"
 }

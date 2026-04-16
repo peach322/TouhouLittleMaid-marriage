@@ -1,12 +1,9 @@
 package com.example.maidmarriage.client;
 
 import com.example.maidmarriage.MaidMarriageMod;
-import com.example.maidmarriage.init.ModEntities;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
 @EventBusSubscriber(modid = MaidMarriageMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -16,11 +13,6 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
  */
 public final class ClientModEvents {
     private ClientModEvents() {
-    }
-
-    @SubscribeEvent
-    public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        EntityRenderers.register(ModEntities.MAID_CHILD.get(), MaidChildRenderer::new);
     }
 
     @SubscribeEvent

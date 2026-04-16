@@ -192,5 +192,9 @@
   "config.maidmarriage.show_pregnancy_debug_countdown": "Show Pregnancy Countdown (Top-Left)",
   "overlay.maidmarriage.debug.birth_countdown": "Birth Countdown [%s]: %s",
   "key.categories.maidmarriage": "Maid Marriage",
-  "key.maidmarriage.rhythm_hit": "Rhythm Hit Key"
+  "key.maidmarriage.rhythm_hit": "Rhythm Hit Key",
+  "message.maidmarriage.child.ride.mount": "You carry %s on your shoulders.",
+  "message.maidmarriage.child.ride.dismount": "%s jumped down from your shoulders.",
+  "message.maidmarriage.child.ride.grown_up_dismount": "%s has grown up and stepped down on her own.",
+  "overlay.maidmarriage.child.ride.tip": "Right-click your child maid with an empty hand (not sneaking) to carry her. Sneak (Shift) to put her down. She will be released automatically when she grows up."
 }

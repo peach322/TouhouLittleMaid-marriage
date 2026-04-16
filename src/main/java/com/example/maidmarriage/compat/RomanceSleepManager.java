@@ -5,8 +5,7 @@ import com.example.maidmarriage.config.ModConfigs;
 import com.example.maidmarriage.data.MarriageData;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.data.PregnancyData;
-import com.example.maidmarriage.entity.MaidChildEntity;
-import com.example.maidmarriage.init.ModEntities;
+import com.example.maidmarriage.entity.ChildMaidHelper;
 import com.example.maidmarriage.rhythm.RomanceRhythmSync;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTickEvent;
 import com.github.tartaricacid.touhoulittlemaid.block.BlockMaidBed;
@@ -345,11 +344,9 @@ public final class RomanceSleepManager {
             return false;
         }
         // Ensure mother keeps adult state if save data had stale child flags.
-        MaidChildEntity.markAsAdult(mother);
-        MaidChildEntity child = ModEntities.MAID_CHILD.get().create(serverLevel);
-        if (child == null) {
-            return false;
-        }
+        ChildMaidHelper.markAsAdult(mother);
+        EntityMaid child = new EntityMaid(serverLevel);
+        child.setPersistenceRequired();
 
         double spawnX = mother.getX() + mother.getLookAngle().x * 0.35D;
         double spawnY = mother.getY();
@@ -357,9 +354,9 @@ public final class RomanceSleepManager {
 
         child.moveTo(spawnX, spawnY, spawnZ, player.getYRot(), 0);
         tameChildWithOwner(child, player);
-        child.setParents(mother.getUUID(), player.getUUID());
-        child.applyBornMaidTraits();
-        child.inheritModelFromMother(mother);
+        ChildMaidHelper.applyBornMaidTraits(child);
+        ChildMaidHelper.initChildState(child, mother.getUUID(), player.getUUID());
+        ChildMaidHelper.inheritModelFromMother(child, mother);
         child.setCustomName(readPlannedChildName(player));
 
         boolean success = serverLevel.addFreshEntity(child);
