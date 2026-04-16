@@ -8,6 +8,7 @@ import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.data.PregnancyData;
 import com.example.maidmarriage.entity.ChildMaidHelper;
 import com.example.maidmarriage.init.ModItems;
+import com.example.maidmarriage.item.MarriageApplicationItem;
 import com.github.tartaricacid.touhoulittlemaid.api.event.InteractMaidEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import java.util.Arrays;
@@ -371,7 +372,7 @@ public final class MarriageEventHandler {
             level.addFreshEntity(lightning);
         }
         if (!player.getAbilities().instabuild) {
-            player.setHealth(Math.max(1.0F, Math.min(player.getHealth(), 1.0F)));
+            player.setHealth(1.0F);
         }
         player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
     }
@@ -395,8 +396,8 @@ public final class MarriageEventHandler {
             return;
         }
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-            tag.putUUID("maidmarriage_application_pending_maid", maid.getUUID());
-            tag.putUUID("maidmarriage_application_pending_owner", player.getUUID());
+            tag.putUUID(MarriageApplicationItem.TAG_PENDING_MAID, maid.getUUID());
+            tag.putUUID(MarriageApplicationItem.TAG_PENDING_OWNER, player.getUUID());
         });
         player.sendSystemMessage(Component.translatable("message.maidmarriage.application.maid_selected", maid.getDisplayName()));
     }

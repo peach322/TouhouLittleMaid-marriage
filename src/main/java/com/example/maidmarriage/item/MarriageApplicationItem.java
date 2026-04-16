@@ -15,8 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
 public class MarriageApplicationItem extends DescriptionItem {
-    private static final String TAG_PENDING_MAID = "maidmarriage_application_pending_maid";
-    private static final String TAG_PENDING_OWNER = "maidmarriage_application_pending_owner";
+    public static final String TAG_PENDING_MAID = "maidmarriage_application_pending_maid";
+    public static final String TAG_PENDING_OWNER = "maidmarriage_application_pending_owner";
 
     public MarriageApplicationItem(Properties properties, String tooltipKey) {
         super(properties, tooltipKey);
