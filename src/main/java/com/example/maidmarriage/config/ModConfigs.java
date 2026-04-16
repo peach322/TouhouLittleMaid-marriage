@@ -13,6 +13,7 @@ public final class ModConfigs {
     private static final ModConfigSpec.IntValue PREGNANCY_BIRTH_DAYS;
     private static final ModConfigSpec.IntValue CHILD_GROWTH_DAYS;
     private static final ModConfigSpec.IntValue LONGING_DAYS;
+    private static final ModConfigSpec.IntValue ROMANCE_COOLDOWN_DAYS;
     private static final ModConfigSpec.BooleanValue CLINGY_MAID_ENABLED;
     private static final ModConfigSpec.EnumValue<RhythmHitKey> RHYTHM_HIT_KEY;
     private static final ModConfigSpec.BooleanValue SHOW_PREGNANCY_DEBUG_COUNTDOWN;
@@ -52,6 +53,11 @@ public final class ModConfigs {
                 .comment("Days without romance before entering longing mood.")
                 .translation("config.maidmarriage.longing_days")
                 .defineInRange("longingDays", 3, 1, 30);
+
+        ROMANCE_COOLDOWN_DAYS = builder
+                .comment("Days of weak period after romance; during this time romance cannot be triggered again.")
+                .translation("config.maidmarriage.romance_cooldown_days")
+                .defineInRange("romanceCooldownDays", 1, 0, 30);
 
         CLINGY_MAID_ENABLED = builder
                 .comment("Enable clingy maid behavior and longing mood display.")
@@ -109,6 +115,10 @@ public final class ModConfigs {
 
     public static int longingDays() {
         return LONGING_DAYS.get();
+    }
+
+    public static int romanceCooldownDays() {
+        return ROMANCE_COOLDOWN_DAYS.get();
     }
 
     public static boolean clingyMaidEnabled() {

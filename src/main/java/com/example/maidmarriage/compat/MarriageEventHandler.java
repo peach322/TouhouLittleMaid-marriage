@@ -2,6 +2,7 @@ package com.example.maidmarriage.compat;
 
 import com.example.maidmarriage.advancement.ModAdvancements;
 import com.example.maidmarriage.config.ModConfigs;
+import com.example.maidmarriage.data.ChildStateData;
 import com.example.maidmarriage.data.MarriageData;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.data.PregnancyData;
@@ -11,17 +12,21 @@ import com.github.tartaricacid.touhoulittlemaid.api.event.InteractMaidEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,6 +62,9 @@ public final class MarriageEventHandler {
 
         ItemStack stack = event.getStack();
         if (stack.isEmpty()) {
+            if (tryHandleAffectionInteraction(event.getPlayer(), event.getMaid())) {
+                event.setCanceled(true);
+            }
             return;
         }
 
@@ -72,6 +80,16 @@ public final class MarriageEventHandler {
         }
         if (stack.is(ModItems.LONGING_TESTER.get())) {
             handleLongingTest(event.getPlayer(), event.getMaid());
+            event.setCanceled(true);
+            return;
+        }
+        if (stack.is(ModItems.MARRIAGE_APPLICATION.get())) {
+            handleMarriageApplicationMaidSelection(event.getPlayer(), event.getMaid(), stack);
+            event.setCanceled(true);
+            return;
+        }
+        if (stack.is(ModItems.GENEALOGY_DISPLAY_BOOK.get())) {
+            handleGenealogyDisplay(event.getPlayer(), event.getMaid());
             event.setCanceled(true);
             return;
         }
@@ -340,15 +358,84 @@ public final class MarriageEventHandler {
     }
 
     private static void summonProposalPunishLightning(ServerLevel level, net.minecraft.world.entity.player.Player player) {
-        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level);
-        if (lightning == null) {
+        for (int i = 0; i < 5; i++) {
+            LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level);
+            if (lightning == null) {
+                continue;
+            }
+            lightning.moveTo(player.getX(), player.getY(), player.getZ());
+            lightning.setVisualOnly(true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                lightning.setCause(serverPlayer);
+            }
+            level.addFreshEntity(lightning);
+        }
+        if (!player.getAbilities().instabuild) {
+            player.setHealth(Math.max(1.0F, Math.min(player.getHealth(), 1.0F)));
+        }
+        player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
+    }
+
+    private static void handleGenealogyDisplay(net.minecraft.world.entity.player.Player player, EntityMaid maid) {
+        ChildStateData childState = maid.getData(ModTaskData.CHILD_STATE);
+        if (childState == null || (!childState.motherUuid().isPresent() && !childState.fatherUuid().isPresent())) {
+            player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.none"));
             return;
         }
-        lightning.moveTo(player.getX(), player.getY(), player.getZ());
-        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            lightning.setCause(serverPlayer);
+        String motherInfo = childState.motherUuid().map(UUID::toString).orElse("-");
+        String fatherInfo = childState.fatherUuid().map(UUID::toString).orElse("-");
+        player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.header", maid.getDisplayName()));
+        player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.mother", motherInfo));
+        player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.father", fatherInfo));
+    }
+
+    private static void handleMarriageApplicationMaidSelection(net.minecraft.world.entity.player.Player player, EntityMaid maid, ItemStack stack) {
+        if (!maid.isOwnedBy(player)) {
+            player.sendSystemMessage(Component.translatable("message.maidmarriage.application.need_owner"));
+            return;
         }
-        level.addFreshEntity(lightning);
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            tag.putUUID("maidmarriage_application_pending_maid", maid.getUUID());
+            tag.putUUID("maidmarriage_application_pending_owner", player.getUUID());
+        });
+        player.sendSystemMessage(Component.translatable("message.maidmarriage.application.maid_selected", maid.getDisplayName()));
+    }
+
+    private static boolean tryHandleAffectionInteraction(net.minecraft.world.entity.player.Player player, EntityMaid maid) {
+        if (!maid.isOwnedBy(player)) {
+            return false;
+        }
+        if (ChildMaidHelper.shouldStayChild(maid)) {
+            return false;
+        }
+        if (!isMarriedWithPlayer(maid, player)) {
+            return false;
+        }
+        if (maid.isInSittingPose()) {
+            playAffectionEffect(maid, "dialogue.maidmarriage.interaction.pet");
+            player.sendSystemMessage(Component.translatable("message.maidmarriage.interaction.pet", maid.getDisplayName()));
+            return true;
+        }
+        if (player.isShiftKeyDown()) {
+            playAffectionEffect(maid, "dialogue.maidmarriage.interaction.kiss");
+            player.sendSystemMessage(Component.translatable("message.maidmarriage.interaction.kiss", maid.getDisplayName()));
+            return true;
+        }
+        if (!maid.isPassenger()) {
+            maid.startRiding(player, true);
+        }
+        playAffectionEffect(maid, "dialogue.maidmarriage.interaction.hug");
+        player.sendSystemMessage(Component.translatable("message.maidmarriage.interaction.hug", maid.getDisplayName()));
+        return true;
+    }
+
+    private static void playAffectionEffect(EntityMaid maid, String dialogueKey) {
+        if (maid.level() instanceof ServerLevel level) {
+            level.sendParticles(ParticleTypes.HEART, maid.getX(), maid.getY(1.0), maid.getZ(),
+                    6, 0.25, 0.2, 0.25, 0.01);
+        }
+        RomanceSleepManager.speakSingleLine(maid, dialogueKey);
+        maid.level().playSound(null, maid.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.4F, 1.5F);
     }
 
     private enum FlowerGift {

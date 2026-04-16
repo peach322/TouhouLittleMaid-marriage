@@ -3,6 +3,7 @@ package com.example.maidmarriage.compat;
 import com.example.maidmarriage.data.ChildStateData;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.entity.ChildMaidHelper;
+import com.example.maidmarriage.init.ModItems;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTickEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.particles.ParticleTypes;
@@ -50,6 +51,9 @@ public final class ChildMaidGrowthHandler {
         // Ensure tame state is initialised (may be missing after film restoration).
         // Fast path returns immediately once PERSISTENT_TAME_INITIALIZED_KEY is set.
         ensureFullTameState(maid);
+        if (isGrowthPausedByAccessory(maid)) {
+            return;
+        }
 
         // Increment growth ticks via setData (no network packet; dataMaps updated for save).
         int growthTicks = state.growthTicks() + 1;
@@ -130,5 +134,10 @@ public final class ChildMaidGrowthHandler {
             maid.tame(owner);
             maid.getPersistentData().putBoolean(ChildMaidHelper.PERSISTENT_TAME_INITIALIZED_KEY, true);
         }
+    }
+
+    private static boolean isGrowthPausedByAccessory(EntityMaid maid) {
+        return maid.getMainHandItem().is(ModItems.GOLDEN_DANDELION_HAIRPIN.get())
+                || maid.getOffhandItem().is(ModItems.GOLDEN_DANDELION_HAIRPIN.get());
     }
 }
