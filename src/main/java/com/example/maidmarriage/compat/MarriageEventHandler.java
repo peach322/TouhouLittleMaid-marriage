@@ -48,6 +48,8 @@ public final class MarriageEventHandler {
     private static final String TAG_FLOWER_GIFT_MASK = "maidmarriage_flower_gift_mask";
     private static final int NORMAL_FLOWER_FAVORABILITY_GAIN = 10;
     private static final int RAINBOW_BOUQUET_FAVORABILITY_GAIN = 10;
+    private static final int PROPOSAL_PUNISHMENT_LIGHTNING_COUNT = 5;
+    private static final int PROPOSAL_PUNISHMENT_CONFUSION_DURATION_TICKS = 200;
 
     private MarriageEventHandler() {
     }
@@ -359,7 +361,7 @@ public final class MarriageEventHandler {
     }
 
     private static void summonProposalPunishLightning(ServerLevel level, net.minecraft.world.entity.player.Player player) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < PROPOSAL_PUNISHMENT_LIGHTNING_COUNT; i++) {
             LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level);
             if (lightning == null) {
                 continue;
@@ -374,7 +376,7 @@ public final class MarriageEventHandler {
         if (!player.getAbilities().instabuild) {
             player.setHealth(1.0F);
         }
-        player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
+        player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, PROPOSAL_PUNISHMENT_CONFUSION_DURATION_TICKS, 0));
     }
 
     private static void handleGenealogyDisplay(net.minecraft.world.entity.player.Player player, EntityMaid maid) {
