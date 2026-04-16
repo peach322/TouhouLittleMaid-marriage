@@ -4,6 +4,7 @@ import com.example.maidmarriage.entity.MaidChildEntity;
 import com.example.maidmarriage.init.ModEntities;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidAndItemTransformEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import org.slf4j.Logger;
 
 /**
  * Intercepts TLM's film resurrection so that a MaidChildEntity stored in a film
@@ -37,6 +39,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
  * </ol>
  */
 public final class ChildMaidFilmReviveHandler {
+    private static final Logger LOGGER = LogUtils.getLogger();
     /**
      * Holds the original film data between the {@code ToMaid} event and
      * {@code EntityJoinLevelEvent}.  The Minecraft server tick loop is single-threaded,
@@ -101,6 +104,7 @@ public final class ChildMaidFilmReviveHandler {
         Level level = event.getLevel();
         MaidChildEntity child = ModEntities.MAID_CHILD.get().create(level);
         if (child == null) {
+            LOGGER.warn("Failed to create child maid entity while reviving film maid UUID={}", maid.getUUID());
             return;
         }
 

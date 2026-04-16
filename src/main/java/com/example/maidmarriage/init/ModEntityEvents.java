@@ -9,11 +9,11 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
-@EventBusSubscriber(modid = MaidMarriageMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 /**
  * 实体事件初始化：绑定实体属性与相关事件。
  * 该类的具体逻辑可参见下方方法与字段定义。
  */
+@EventBusSubscriber(modid = MaidMarriageMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class ModEntityEvents {
     private ModEntityEvents() {
     }

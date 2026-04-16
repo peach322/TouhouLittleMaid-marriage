@@ -2,7 +2,6 @@ package com.example.maidmarriage.compat;
 
 import com.example.maidmarriage.advancement.ModAdvancements;
 import com.example.maidmarriage.config.ModConfigs;
-import com.example.maidmarriage.data.ChildStateData;
 import com.example.maidmarriage.data.MarriageData;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.data.PregnancyData;
@@ -380,13 +379,19 @@ public final class MarriageEventHandler {
     }
 
     private static void handleGenealogyDisplay(net.minecraft.world.entity.player.Player player, EntityMaid maid) {
-        ChildStateData childState = maid.getData(ModTaskData.CHILD_STATE);
-        if (childState == null || (!childState.motherUuid().isPresent() && !childState.fatherUuid().isPresent())) {
+        CompoundTag persistent = maid.getPersistentData();
+        boolean hasMother = persistent.hasUUID(MaidChildEntity.PERSISTENT_MOTHER_UUID_KEY);
+        boolean hasFather = persistent.hasUUID(MaidChildEntity.PERSISTENT_FATHER_UUID_KEY);
+        if (!hasMother && !hasFather) {
             player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.none"));
             return;
         }
-        String motherInfo = childState.motherUuid().map(UUID::toString).orElse("-");
-        String fatherInfo = childState.fatherUuid().map(UUID::toString).orElse("-");
+        String motherInfo = hasMother
+                ? persistent.getUUID(MaidChildEntity.PERSISTENT_MOTHER_UUID_KEY).toString()
+                : "-";
+        String fatherInfo = hasFather
+                ? persistent.getUUID(MaidChildEntity.PERSISTENT_FATHER_UUID_KEY).toString()
+                : "-";
         player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.header", maid.getDisplayName()));
         player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.mother", motherInfo));
         player.sendSystemMessage(Component.translatable("message.maidmarriage.genealogy.father", fatherInfo));
@@ -408,7 +413,7 @@ public final class MarriageEventHandler {
         if (!maid.isOwnedBy(player)) {
             return false;
         }
-        if (ChildMaidHelper.shouldStayChild(maid)) {
+        if (MaidChildEntity.shouldStayChild(maid)) {
             return false;
         }
         if (!isMarriedWithPlayer(maid, player)) {

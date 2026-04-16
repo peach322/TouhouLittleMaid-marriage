@@ -13,6 +13,7 @@ import com.github.tartaricacid.touhoulittlemaid.block.BlockMaidBed;
 import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.IChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.implement.TextChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +39,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import org.slf4j.Logger;
 
 /**
  * 闁告艾鐬煎﹢銏＄▔鎼达絾鏅搁柤鎻掑级缁侊妇绮欑€ｎ剦鍚€闁荤偛妫寸槐鐗堝緞閸曨厽鍊為柛鎾楀嫬鍓伴柕鍡曠缁洪箖骞嗛崨顓熷剷闁绘粠鍨埀顑跨劍閳ь兘鍋撻悗娑欐磻缁楀矂宕氶崱妞栴偊濡?
  * 閻犲洢鍎崇悮顐︽儍閸曨偄寰斿ù锝嗘崌閳ь剚妲掔欢顐﹀矗椤栨艾妫橀悷娆庢缁楀懘寮憴鍕厵婵炲娲戠粭宀€鈧稒顨嗛宀€鈧鐭粻鐔煎Υ?
  */
 public final class RomanceSleepManager {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final int WAKE_DIALOGUE_DELAY_TICKS = 40;
     private static final int SCENE_INTERVAL_TICKS = 24;
     private static final int SINGLE_LINE_BUBBLE_TICKS = 100;
@@ -356,6 +359,8 @@ public final class RomanceSleepManager {
         MaidChildEntity.markAsAdult(mother);
         MaidChildEntity child = ModEntities.MAID_CHILD.get().create(serverLevel);
         if (child == null) {
+            LOGGER.warn("Failed to create child maid entity for birth: mother={}, player={}",
+                    mother.getUUID(), player.getUUID());
             return false;
         }
 

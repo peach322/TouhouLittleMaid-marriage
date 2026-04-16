@@ -197,7 +197,9 @@ public class MaidChildEntity extends EntityMaid {
     }
 
     private static int getAdultAfterTicks() {
-        return Math.max(1, ModConfigs.childGrowthDays()) * DAY_TICKS;
+        long days = Math.max(1, ModConfigs.childGrowthDays());
+        long ticks = days * DAY_TICKS;
+        return (int) Math.min(Integer.MAX_VALUE, ticks);
     }
 
     private static int getMiddleStageTicks() {

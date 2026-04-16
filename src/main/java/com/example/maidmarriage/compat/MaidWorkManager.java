@@ -4,7 +4,6 @@ import com.example.maidmarriage.MaidMarriageMod;
 import com.example.maidmarriage.config.ModConfigs;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.data.PregnancyData;
-import com.example.maidmarriage.entity.ChildMaidHelper;
 import com.example.maidmarriage.entity.MaidChildEntity;
 import com.example.maidmarriage.init.ModEntities;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTickEvent;
@@ -12,6 +11,7 @@ import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +51,7 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
+import org.slf4j.Logger;
 
 /**
  * Child maid work system:
@@ -59,6 +60,7 @@ import net.neoforged.neoforge.items.ItemHandlerHelper;
  * 3) handle favorability cost, lock, and idle recovery.
  */
 public final class MaidWorkManager {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final double GLOBAL_DURATION_SCALE = 0.8D;
     private static final double FAVOR_DURATION_BASE = 50.0D;
     private static final double MIN_FAVOR_DURATION_COEFFICIENT = 0.2D;
@@ -672,6 +674,8 @@ public final class MaidWorkManager {
         }
         MaidChildEntity restored = ModEntities.MAID_CHILD.get().create(level);
         if (restored == null) {
+            LOGGER.warn("Failed to restore child maid entity: original maid UUID={}, level={}",
+                    maid.getUUID(), level.dimension().location());
             return false;
         }
 
@@ -691,7 +695,6 @@ public final class MaidWorkManager {
 
     private static boolean isBornMaid(EntityMaid maid) {
         return maid instanceof MaidChildEntity
-                || maid.getType() == ModEntities.MAID_CHILD.get()
                 || maid.getTags().contains(MaidChildEntity.BORN_MAID_TAG)
                 || MaidChildEntity.shouldStayChild(maid);
     }
