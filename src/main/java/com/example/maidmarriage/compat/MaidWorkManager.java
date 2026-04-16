@@ -5,6 +5,8 @@ import com.example.maidmarriage.config.ModConfigs;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.data.PregnancyData;
 import com.example.maidmarriage.entity.ChildMaidHelper;
+import com.example.maidmarriage.entity.MaidChildEntity;
+import com.example.maidmarriage.init.ModEntities;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTickEvent;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -139,6 +141,9 @@ public final class MaidWorkManager {
             return;
         }
         if (!(maid.level() instanceof ServerLevel level)) {
+            return;
+        }
+        if (tryRestoreChildMaidEntity(level, maid)) {
             return;
         }
 
@@ -658,12 +663,37 @@ public final class MaidWorkManager {
     }
 
     /**
-     * Returns true if this maid was born (as a child maid) or is currently
-     * in child state.  Used to gate born-maid work modes.
+     * Soul recall may deserialize child maids as base maid entities.
+     * If a maid is marked as "still child", rebuild it back to MaidChildEntity.
      */
+    private static boolean tryRestoreChildMaidEntity(ServerLevel level, EntityMaid maid) {
+        if (maid instanceof MaidChildEntity || !MaidChildEntity.shouldStayChild(maid)) {
+            return false;
+        }
+        MaidChildEntity restored = ModEntities.MAID_CHILD.get().create(level);
+        if (restored == null) {
+            return false;
+        }
+
+        CompoundTag savedData = maid.saveWithoutId(new CompoundTag());
+        savedData.remove("UUID");
+        savedData.remove("UUIDMost");
+        savedData.remove("UUIDLeast");
+        restored.load(savedData);
+        restored.setPersistenceRequired();
+
+        if (!level.addFreshEntity(restored)) {
+            return false;
+        }
+        maid.discard();
+        return true;
+    }
+
     private static boolean isBornMaid(EntityMaid maid) {
-        return ChildMaidHelper.shouldStayChild(maid)
-                || maid.getTags().contains(ChildMaidHelper.BORN_MAID_TAG);
+        return maid instanceof MaidChildEntity
+                || maid.getType() == ModEntities.MAID_CHILD.get()
+                || maid.getTags().contains(MaidChildEntity.BORN_MAID_TAG)
+                || MaidChildEntity.shouldStayChild(maid);
     }
 
     private static int clampFavorability(int favorability) {

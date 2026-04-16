@@ -12,7 +12,6 @@ import net.minecraft.resources.ResourceLocation;
 public final class ModTaskData {
     public static TaskDataKey<MarriageData> MARRIAGE_DATA;
     public static TaskDataKey<PregnancyData> PREGNANCY_DATA;
-    public static TaskDataKey<ChildStateData> CHILD_STATE;
 
     private ModTaskData() {
     }
@@ -25,11 +24,6 @@ public final class ModTaskData {
         PREGNANCY_DATA = register.register(
                 ResourceLocation.fromNamespaceAndPath(MaidMarriageMod.MOD_ID, "pregnancy_data"),
                 PregnancyData.CODEC
-        );
-        CHILD_STATE = register.register(
-                ChildStateData.KEY,
-                ChildStateData.SAVE_CODEC,
-                ChildStateData.SYNC_CODEC
         );
     }
 }

@@ -2,6 +2,7 @@ package com.example.maidmarriage;
 
 import com.example.maidmarriage.config.ModConfigs;
 import com.example.maidmarriage.debug.ModDebugCommands;
+import com.example.maidmarriage.init.ModEntities;
 import com.example.maidmarriage.init.ModItems;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
@@ -24,6 +25,7 @@ public final class MaidMarriageMod {
 
     public MaidMarriageMod(IEventBus modBus, ModContainer modContainer) {
         ModItems.ITEMS.register(modBus);
+        ModEntities.ENTITY_TYPES.register(modBus);
         NeoForge.EVENT_BUS.register(ModDebugCommands.class);
         modBus.addListener(MaidMarriageMod::addCreativeTabItems);
         modContainer.registerConfig(ModConfig.Type.COMMON, ModConfigs.SPEC);

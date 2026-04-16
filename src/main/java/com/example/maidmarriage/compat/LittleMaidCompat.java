@@ -1,6 +1,5 @@
 package com.example.maidmarriage.compat;
 
-import com.example.maidmarriage.client.ChildMaidRenderHandler;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.init.ModItems;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
@@ -10,7 +9,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.data.TaskDataRegister;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 
 @LittleMaidExtension
@@ -24,14 +22,6 @@ public class LittleMaidCompat implements ILittleMaid {
         NeoForge.EVENT_BUS.register(RomanceSleepManager.class);
         NeoForge.EVENT_BUS.register(MaidWorkManager.class);
         NeoForge.EVENT_BUS.register(ChildMaidFilmReviveHandler.class);
-        NeoForge.EVENT_BUS.register(ChildMaidGrowthHandler.class);
-        NeoForge.EVENT_BUS.register(ChildMaidRideHandler.class);
-        // Register client-only render handler dist-safely: the FMLEnvironment guard
-        // prevents this branch from executing on the server, so ChildMaidRenderHandler
-        // (which references client-only RenderLivingEvent) is never classloaded there.
-        if (FMLEnvironment.dist.isClient()) {
-            NeoForge.EVENT_BUS.register(ChildMaidRenderHandler.class);
-        }
     }
 
     @Override
@@ -62,6 +52,5 @@ public class LittleMaidCompat implements ILittleMaid {
         overlay.addTips("overlay.maidmarriage.child.explore.ruins", net.minecraft.world.item.Items.MAP);
         overlay.addTips("overlay.maidmarriage.child.explore.abyss", net.minecraft.world.item.Items.ENDER_EYE);
         overlay.addTips("overlay.maidmarriage.child.favor.recover", net.minecraft.world.item.Items.SUGAR);
-        overlay.addTips("overlay.maidmarriage.child.ride.tip", net.minecraft.world.item.Items.FEATHER);
     }
 }

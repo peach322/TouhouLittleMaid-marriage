@@ -6,7 +6,7 @@ import com.example.maidmarriage.data.ChildStateData;
 import com.example.maidmarriage.data.MarriageData;
 import com.example.maidmarriage.data.ModTaskData;
 import com.example.maidmarriage.data.PregnancyData;
-import com.example.maidmarriage.entity.ChildMaidHelper;
+import com.example.maidmarriage.entity.MaidChildEntity;
 import com.example.maidmarriage.init.ModItems;
 import com.example.maidmarriage.item.MarriageApplicationItem;
 import com.github.tartaricacid.touhoulittlemaid.api.event.InteractMaidEvent;
@@ -111,7 +111,7 @@ public final class MarriageEventHandler {
             return;
         }
 
-        if (maid.getTags().contains(ChildMaidHelper.BORN_MAID_TAG) && ChildMaidHelper.shouldStayChild(maid)) {
+        if (maid.getTags().contains(MaidChildEntity.BORN_MAID_TAG) && MaidChildEntity.shouldStayChild(maid)) {
             if (maid.level() instanceof ServerLevel level) {
                 summonProposalPunishLightning(level, player);
             }
